@@ -1,0 +1,13 @@
+{
+  "name": "battle-for-wudgar",
+  "description": "Wutkemons and shit",
+
+  "targetType": "executable",
+  "sourcePaths": ["src"],
+  "importPaths": ["src"],
+  "libs": [
+  ],
+ 
+  "dependencies": {
+  }
+}
