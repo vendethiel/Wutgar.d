@@ -7,4 +7,8 @@ class Player {
   this(string name) {
     this.name = name;
   }
+
+  @property bool hasCreature() {
+    return creatures.length > 0;
+  }
 }

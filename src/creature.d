@@ -1,4 +1,4 @@
-import std.random;
+import std.random : uniform;
 
 class CreatureStats {
   string name;

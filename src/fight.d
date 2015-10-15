@@ -6,4 +6,8 @@ enum FightState {
 
 class Fight {
   Creature creature;
+
+  this(Creature creature) {
+    this.creature = creature;
+  }
 }

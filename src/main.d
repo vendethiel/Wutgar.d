@@ -1,5 +1,6 @@
 import std.stdio;
 import std.getopt;
+import exception : InterruptException;
 import game;
 import player;
 
@@ -11,7 +12,10 @@ void main(string[] args) {
   if (name != "") {
     auto player = new Player(name);
     auto game = new Game(player);
-    game.start();
+    try {
+      game.start();
+    } catch (InterruptException e) {
+    }
   } else {
     printUsage();
   }
