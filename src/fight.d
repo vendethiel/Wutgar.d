@@ -5,9 +5,15 @@ enum FightState {
 };
 
 class Fight {
-  Creature creature;
+  Creature fighter;
+  Creature opponent;
 
-  this(Creature creature) {
-    this.creature = creature;
+  this(Creature fighter, Creature opponent) {
+    this.fighter = fighter;
+    this.opponent = opponent;
+  }
+
+  @property bool isDone() {
+    return creature.
   }
 }
