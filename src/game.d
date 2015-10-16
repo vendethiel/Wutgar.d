@@ -15,14 +15,7 @@ class Game {
   }
 
   @property FightState fightState() {
-    if (fight is null) {
-      return FightState.OutOfFight;
-    }
-    if (fight.isOver) {
-      fight = null;
-      return FightState.OutOfFight;
-    }
-    return FightState.InFight;
+    return fight is null ? FightState.OutOfFight : FightState.InFight;
   }
 
   @property bool inFight() {

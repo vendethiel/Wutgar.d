@@ -27,8 +27,18 @@ class Creature {
     currentMp = baseStats.mp;
   }
 
+  @property bool isFullHp() {
+    return currentHp == baseStats.hp;
+  }
+
+  @property bool isFullMp() {
+    return currentMp == baseStats.mp;
+  }
+
   // TODO "alias this" or something?
-  @property string name() { return baseStats.name; }
+  @property string name() {
+    return baseStats.name;
+  }
 
   @property bool isDead() {
     return currentHp <= 0;
@@ -36,7 +46,7 @@ class Creature {
 }
 
 auto creatures = [
-  new immutable CreatureStats("Foobar", 50, 50)
+  new immutable CreatureStats("Foobar", 20, 10)
 ];
 
 Creature pick() {

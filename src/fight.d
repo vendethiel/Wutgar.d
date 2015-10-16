@@ -13,6 +13,10 @@ class Fight {
     this.opponent = opponent;
   }
 
+  void opponentTurn() {
+    // TODO
+  }
+
   @property bool isOver() {
     // TODO "dead"?
     if (opponent.isDead) {

@@ -76,23 +76,35 @@ CommandReturn startFight(Game game) {
 CommandReturn quit(Game game) {
   throw new InterruptException();
 }
-CommandReturn attackSlash(Game game) {
-  if (!game.player.hasCreature
-      || game.fight.fighter.currentMp < 3) {
-    writeln("You can't use this attack!");
+
+CommandReturn creatureCheck(command cmd, Game game) {
+  if (!game.player.hasCreature) {
+    writeln("You need a creature to attack!");
     return CommandReturn.KeepTurn;
   }
-  game.fight.fighter.currentMp -= 3;
-  writefln("You inflict 15 damage");
-  game.fight.opponent.currentHp -= 15;
+  return cmd(game);
+}
+
+CommandReturn useAttack(Game game, int dmg, int mp) {
+  if (!game.player.hasCreature) {
+    writeln("You need a creature to attack!");
+    return CommandReturn.KeepTurn;
+  }
+  if (game.fight.fighter.currentMp < mp) {
+    writefln("You need %d MP points to use this attack", mp);
+    return CommandReturn.KeepTurn;
+  }
+  game.fight.fighter.currentMp -= mp;
+  game.fight.opponent.currentHp -= dmg;
+  writefln("You inflict %d damage(s)", dmg);
   return CommandReturn.ConsumeTurn;
 }
+
+CommandReturn attackSlash(Game game) {
+  return useAttack(game, 15, 3);
+}
 CommandReturn attackFire(Game game) {
-  if (!game.player.hasCreature) {
-    writeln("You can't attack without a monster!");
-    return CommandReturn.KeepTurn;
-  }
-  return CommandReturn.ConsumeTurn;
+  return useAttack(game, 30, 7);
 }
 CommandReturn attackGamble(Game game) {
   if (!game.player.hasCreature) {
@@ -103,9 +115,14 @@ CommandReturn attackGamble(Game game) {
 }
 CommandReturn attackRest(Game game) {
   if (!game.player.hasCreature) {
-    writeln("You can't attack without a monster!");
+    writeln("You can't do this without a monster!");
     return CommandReturn.KeepTurn;
   }
+  if (game.fight.fighter.isFullMp) {
+    writeln("You're already full mana!");
+    return CommandReturn.KeepTurn;
+  }
+  game.fight.fighter.currentMp += 10;
   return CommandReturn.ConsumeTurn;
 }
 
