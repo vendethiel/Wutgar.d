@@ -18,11 +18,15 @@ class Game {
     if (fight is null) {
       return FightState.OutOfFight;
     }
-    if (fight.isDone) {
+    if (fight.isOver) {
       fight = null;
       return FightState.OutOfFight;
     }
     return FightState.InFight;
+  }
+
+  @property bool inFight() {
+    return fightState() == FightState.InFight;
   }
 
   void start() {
@@ -30,12 +34,33 @@ class Game {
     while (true) {
       printTurnBanner();
       if (auto command = handleCommand(this, readLine())) {
-        if (ConsumeTurn == command(this) && fightState == FightState.InFight) {
-          writeln("The monster plays...");
+        if (CommandReturn.ConsumeTurn == command(this) && inFight) {
+          playOpponentTurn();
         }
       } else {
         writeln("Unrecognized command");
       }
+    }
+  }
+
+  void playOpponentTurn() {
+    checkFightEnd();
+    if (fight !is null) {
+      fight.opponentTurn();
+      checkFightEnd();
+    }
+  }
+
+  void checkFightEnd() {
+    if (fight !is null && fight.isOver) {
+      if (fight.opponent.isDead) {
+        writeln("You win!");
+      } else if (fight.fighter !is null) {
+        writeln("You lost :(");
+      } else {
+        writeln("You ran away from the fight!");
+      }
+      fight = null;
     }
   }
 

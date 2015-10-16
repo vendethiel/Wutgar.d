@@ -41,73 +41,92 @@ command handleCommand(Game game, string name) {
 }
 
 
-void listTeam(Game game) {
+CommandReturn listTeam(Game game) {
   writeln("Your team:");
   foreach (creature; game.player.creatures) {
     writeln("- " ~ creature.name);
   }
-  return KeepTurn;
+  return CommandReturn.KeepTurn;
 }
-void pickPokemon(Game game) {
+CommandReturn pickPokemon(Game game) {
   if (!game.player.hasCreature) {
     writeln("Can't pick a pokemon: you don't have any");
-    return;
+    return CommandReturn.KeepTurn;
   }
 
   writeln("Your team:");
   foreach (i, creature; game.player.creatures) {
-    writefln("- #%d %s", i, creature.name);
+    writefln("- #%d %s", i + 1, creature.name);
   }
 
   game.player.selectedId =
     readBetween("Creature number: ", 1, to!int(game.player.creatures.length));
-  return KeepTurn;
+  return CommandReturn.KeepTurn;
 }
-void startFight(Game game) {
+CommandReturn startFight(Game game) {
   if (game.player.canStartFight) {
     auto creature = creature.pick();
     writeln("You're now fighting a " ~ creature.name);
-    game.fight = new Fight(creature);
+    game.fight = new Fight(game.player.selectedCreature, creature);
   } else {
     writeln("You can't fight until you picked a healthy pokemon to fight for you");
   }
-  return KeepTurn;
+  return CommandReturn.KeepTurn;
 }
-void quit(Game game) {
+CommandReturn quit(Game game) {
   throw new InterruptException();
 }
-void attackSlash(Game game) {
-  if (game.player.mp >= 3) {
-    game.player.mp -= 3;
-    game.fight;
+CommandReturn attackSlash(Game game) {
+  if (!game.player.hasCreature
+      || game.fight.fighter.currentMp < 3) {
+    writeln("You can't use this attack!");
+    return CommandReturn.KeepTurn;
   }
-  return KeepTurn;
+  game.fight.fighter.currentMp -= 3;
+  writefln("You inflict 15 damage");
+  game.fight.opponent.currentHp -= 15;
+  return CommandReturn.ConsumeTurn;
 }
-void attackFire(Game game) {
+CommandReturn attackFire(Game game) {
+  if (!game.player.hasCreature) {
+    writeln("You can't attack without a monster!");
+    return CommandReturn.KeepTurn;
+  }
+  return CommandReturn.ConsumeTurn;
 }
-void attackGamble(Game game) {
+CommandReturn attackGamble(Game game) {
+  if (!game.player.hasCreature) {
+    writeln("You can't attack without a monster!");
+    return CommandReturn.KeepTurn;
+  }
+  return CommandReturn.ConsumeTurn;
 }
-void attackRest(Game game) {
+CommandReturn attackRest(Game game) {
+  if (!game.player.hasCreature) {
+    writeln("You can't attack without a monster!");
+    return CommandReturn.KeepTurn;
+  }
+  return CommandReturn.ConsumeTurn;
 }
 
-void magicCatch(Game game) {
+CommandReturn magicCatch(Game game) {
   immutable CHANCES = 3;
   if (game.player.hasCreature) {
-    writeln("TODO");
+    writeln("TODO algo % de vie");
   } else if (uniform(1, CHANCES) == 1) {
-    writeln("You got a " ~ game.fight.creature.name);
-    game.player.creatures ~= game.fight.creature;
+    writeln("You got a " ~ game.fight.opponent.name);
+    game.player.creatures ~= game.fight.opponent;
     game.fight = null;
   } else {
-    writeln(game.fight.creature.name ~ " scared you away from the fight");
+    writeln(game.fight.opponent.name ~ " scared you away from the fight");
     game.fight = null;
   }
-  return KeepTurn;
+  return CommandReturn.KeepTurn;
 }
-void quit(Game game) {
+CommandReturn quit(Game game) {
   throw new InterruptException();
 }
-void flee(Game game) {
+CommandReturn flee(Game game) {
   game.fight = null;
-  return KeepTurn;
+  return CommandReturn.KeepTurn;
 }

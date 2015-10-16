@@ -5,7 +5,7 @@ enum FightState {
 };
 
 class Fight {
-  Creature fighter;
+  Creature fighter; /* TODO std.typecons.Nullable */
   Creature opponent;
 
   this(Creature fighter, Creature opponent) {
@@ -13,7 +13,14 @@ class Fight {
     this.opponent = opponent;
   }
 
-  @property bool isDone() {
-    return creature.
+  @property bool isOver() {
+    // TODO "dead"?
+    if (opponent.isDead) {
+      return true;
+    } else if (fighter !is null) {
+      // it's not our first 
+      return fighter.isDead;
+    }
+    return false;
   }
 }

@@ -26,11 +26,11 @@ class Player {
 
   @property Creature selectedCreature() {
     if (creatures.length < selectedId || !selectedId) {
-        return creatures[selectedId - 1];
-    } else {
       // 0... what if we don't have any pokemons?
       selectedId = 0;
       return null;
+    } else {
+      return creatures[selectedId - 1];
     }
   }
 }

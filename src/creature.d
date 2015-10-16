@@ -29,6 +29,10 @@ class Creature {
 
   // TODO "alias this" or something?
   @property string name() { return baseStats.name; }
+
+  @property bool isDead() {
+    return currentHp <= 0;
+  }
 }
 
 auto creatures = [
