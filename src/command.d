@@ -1,6 +1,8 @@
 import std.stdio : writeln, writefln;
 import std.conv : to;
 import std.random : uniform;
+import std.algorithm : map;
+import std.functional : toDelegate;
 import exception : InterruptException;
 import read : readLine, readBetween;
 import game;
@@ -13,26 +15,26 @@ enum CommandReturn {
   KeepTurn,
 }
 
-alias command = CommandReturn function(Game);
+alias command = CommandReturn delegate(Game);
 
 command handleCommand(Game game, string name) {
   static command[string][FightState] actions;
   if (!actions) {
     actions = [
       FightState.OutOfFight: [
-        "team": &listTeam,
-        "you are the chosen one": &pickPokemon,
-        "let's fight": &startFight,
-        "quit": &quit,
+        "team": toDelegate(&listTeam),
+        "you are the chosen one": toDelegate(&pickPokemon),
+        "let's fight": toDelegate(&startFight),
+        "quit": toDelegate(&quit),
       ],
       FightState.InFight: [
-        "slash": &attackSlash,
-        "fire": &attackFire,
-        "gamble": &attackGamble,
-        "rest": &attackRest,
+        "slash": toDelegate(&attackSlash),
+        "fire": toDelegate(&attackFire),
+        "gamble": toDelegate(&attackGamble),
+        "rest": toDelegate(&attackRest),
 
-        "magic catch": &magicCatch,
-        "quit": &flee,
+        "magic catch": toDelegate(&magicCatch),
+        "quit": toDelegate(&flee),
       ],
     ];
   }
@@ -77,42 +79,41 @@ CommandReturn quit(Game game) {
   throw new InterruptException();
 }
 
-CommandReturn creatureCheck(command cmd, Game game) {
-  if (!game.player.hasCreature) {
-    writeln("You need a creature to attack!");
-    return CommandReturn.KeepTurn;
-  }
-  return cmd(game);
+command checkCreature(command cmd) {
+  return (Game game) {
+    if (!game.player.hasCreature) {
+      writeln("You need a creature to attack!");
+      return CommandReturn.KeepTurn;
+    }
+    return cmd(game);
+  };
 }
 
-CommandReturn useAttack(Game game, int dmg, int mp) {
-  if (!game.player.hasCreature) {
-    writeln("You need a creature to attack!");
-    return CommandReturn.KeepTurn;
-  }
-  if (game.fight.fighter.currentMp < mp) {
-    writefln("You need %d MP points to use this attack", mp);
-    return CommandReturn.KeepTurn;
-  }
-  game.fight.fighter.currentMp -= mp;
-  game.fight.opponent.currentHp -= dmg;
-  writefln("You inflict %d damage(s)", dmg);
-  return CommandReturn.ConsumeTurn;
+command useAttack(Game game, int dmg, int mp) {
+  return checkCreature((Game game) {
+    if (game.fight.fighter.currentMp < mp) {
+      writefln("You need %d MP points to use this attack", mp);
+      return CommandReturn.KeepTurn;
+    }
+    game.fight.fighter.currentMp -= mp;
+    game.fight.opponent.currentHp -= dmg;
+    writefln("You inflict %d damage(s)", dmg);
+    return CommandReturn.ConsumeTurn;
+  });
 }
 
 CommandReturn attackSlash(Game game) {
-  return useAttack(game, 15, 3);
+  return useAttack(game, 15, 3)(game);
 }
 CommandReturn attackFire(Game game) {
-  return useAttack(game, 30, 7);
+  return useAttack(game, 30, 7)(game);
 }
 CommandReturn attackGamble(Game game) {
-  if (!game.player.hasCreature) {
-    writeln("You can't attack without a monster!");
-    return CommandReturn.KeepTurn;
-  }
-  return CommandReturn.ConsumeTurn;
+  return checkCreature((Game game) {
+    return CommandReturn.ConsumeTurn;
+  })(game);
 }
+
 CommandReturn attackRest(Game game) {
   if (!game.player.hasCreature) {
     writeln("You can't do this without a monster!");
