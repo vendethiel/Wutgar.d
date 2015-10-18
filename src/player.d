@@ -78,6 +78,13 @@ class Player {
     creatures ~= creature;
   }
 
+  void removeDead() {
+    if (selectedCreature !is null && selectedCreature.isDead) {
+      selectedId = 0;
+    }
+    creatures = remove!(c => c.isDead)(creatures);
+  }
+
   @property bool hasCreature() {
     return creatures.length > 0;
   }

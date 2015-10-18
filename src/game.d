@@ -1,3 +1,4 @@
+import std.algorithm.mutation : remove;
 import std.stdio;
 import std.string;
 import read : readLine;
@@ -56,11 +57,9 @@ class Game {
         // TODO win uniform(90, 120) rupees
         writeln("You win!");
       } else if (fight.fighter !is null) {
-        // TODO we need to remove fighter from our team
-        //    + reset the "selectedFighter" from player
-        writeln("You lost :(");
+        writeln("You lost, and your creature is in heaven... or hell");
+        game.player.removeDead();
       } else {
-        // we got scared
         writeln("You ran away from the fight!");
       }
       fight = null;
