@@ -191,6 +191,7 @@ CommandReturn shop(Game game) {
   writeln("You're going shopping!");
   return CommandReturn.KeepTurn;
 }
+
 CommandReturn stat(Game game) {
   return checkCreature((Game game) {
     writeln(game.fight.fighter.stringDesc);

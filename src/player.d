@@ -1,12 +1,27 @@
 import creature;
+import item;
+
+class Inventory {
+  int money;
+  Item[] items;
+  
+  @disable this();
+
+  this(int money, Item[] items) {
+    this.money = money;
+    this.items = items;
+  }
+}
 
 class Player {
   string name;
   Creature[] creatures;
+  Inventory inventory;
   uint selectedId; // 0 if empty, otherwise 1-indexed into `creatures`
 
-  this(string name) {
+  this(string name, Inventory inventory) {
     this.name = name;
+    this.inventory = inventory;
   }
 
   @property bool hasCreature() {
@@ -14,13 +29,10 @@ class Player {
   }
 
   @property bool canStartFight() {
-    // we're always allowed to fight if we're going
-    // to capture our first pokemon
     if (!hasCreature) {
       return true;
     }
-    // otherwise, ensure we have a champion
-    // TODO "healthy" check?
+    // no need for a health check, a dead creature is free'd
     return selectedCreature !is null;
   }
 
