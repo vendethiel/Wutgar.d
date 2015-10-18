@@ -1,3 +1,4 @@
+import std.stdio : writeln;
 import creature;
 
 enum FightState {
@@ -14,15 +15,16 @@ class Fight {
   }
 
   void opponentTurn() {
-    // TODO
+    writeln("Your opponent is playing");
+    // TODO attack
+    // TODO magic catch
   }
 
   @property bool isOver() {
-    // TODO "dead"?
     if (opponent.isDead) {
       return true;
     } else if (fighter !is null) {
-      // it's not our first 
+      // it's not our first
       return fighter.isDead;
     }
     return false;

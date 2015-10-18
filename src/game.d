@@ -44,13 +44,23 @@ class Game {
     }
   }
 
+  /* Forces the fight's end, for example when you capture a pokemon
+     or when you run away from the fight */
+  void endFight() {
+    fight = null;
+  }
+
   void checkFightEnd() {
     if (fight !is null && fight.isOver) {
       if (fight.opponent.isDead) {
+        // TODO win uniform(90, 120) rupees
         writeln("You win!");
       } else if (fight.fighter !is null) {
+        // TODO we need to remove fighter from our team
+        //    + reset the "selectedFighter" from player
         writeln("You lost :(");
       } else {
+        // we got scared
         writeln("You ran away from the fight!");
       }
       fight = null;
