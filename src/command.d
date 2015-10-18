@@ -27,6 +27,7 @@ command handleCommand(Game game, string name) {
         "let's fight": toDelegate(&startFight),
         "shroom": toDelegate(&useShroom),
         "shop": toDelegate(&shop),
+        "inventory": toDelegate(&inventory),
         "quit": toDelegate(&quit),
       ],
       FightState.InFight: [
@@ -102,6 +103,19 @@ auto restrictMp(int mp) {
   };
 }
 
+auto requireObject(string name) {
+  return (command cmd) {
+    return (Game game) {
+      // XXX not sure it should be ".inventory" here...
+      if (!game.player.inventory.hasItem(name)) {
+        writefln("You're missing the item %s to do this", name);
+      }
+      game.player.inventory.useItem(name);
+      return cmd(game);
+    };
+  };
+}
+
 command useAttack(int dmg, int mp) {
 //return compose(checkCreature, restrictMp(mp))((Game game) {
   return restrictMp(mp)((Game game) {
@@ -137,38 +151,26 @@ CommandReturn attackRest(Game game) {
 }
 
 CommandReturn magicCatch(Game game) {
-  immutable CHANCES = 3;
-  if (game.player.hasCreature) {
-    bool success = false;
-    if (game.fight.opponent.currentHp < 5) {
-      // critical state => this'll MOST DEFINITELY work
-      success = uniform(1, 5) != 5; // 4/5 chance to pick it
-    } else if (game.fight.opponent.hpPercent < 50) {
-      // <50%: you got 1/2 chance
-      success = uniform(1, 2) == 1;
-    } else {
-      // >50%: you got 1/5 chance
-      success = uniform(1, 5) == 1;
-    }
-    
-    if (success) {
-      writefln("You successfully captured a %s", game.fight.opponent.name);
-      game.fight.opponent.regenHpMp();
+  return requireObject("Magic Box")((Game game) {
+    if (game.player.hasCreature) {
+      if (game.player.doesCapture(game.fight.opponent)) {
+        writefln("You successfully captured a %s", game.fight.opponent.name);
+        game.player.captureCreature(game.fight.opponent);
+        game.endFight();
+      } else {
+        writeln("You failed to capture the pokemon!");
+        return CommandReturn.ConsumeTurn;
+      }
+    } else if (game.player.doesCapture(game.fight.opponent)) {
+      writeln("You got a " ~ game.fight.opponent.name);
       game.player.creatures ~= game.fight.opponent;
       game.endFight();
     } else {
-      writeln("You failed to capture the pokemon!");
-      return CommandReturn.ConsumeTurn;
+      writeln(game.fight.opponent.name ~ " scared you away from the fight");
+      game.endFight();
     }
-  } else if (uniform(1, CHANCES) == 1) {
-    writeln("You got a " ~ game.fight.opponent.name);
-    game.player.creatures ~= game.fight.opponent;
-    game.endFight();
-  } else {
-    writeln(game.fight.opponent.name ~ " scared you away from the fight");
-    game.endFight();
-  }
-  return CommandReturn.KeepTurn;
+    return CommandReturn.KeepTurn;
+  })(game);
 }
 
 CommandReturn useShroom(Game game) {
@@ -189,6 +191,16 @@ CommandReturn useShroom(Game game) {
 
 CommandReturn shop(Game game) {
   writeln("You're going shopping!");
+  game.player.inventory.useItem("Magic Box");
+  return CommandReturn.KeepTurn;
+}
+
+CommandReturn inventory(Game game) {
+  writefln("You have %d rupee(s)", game.player.inventory.money);
+  writeln("Your inventory:");
+  foreach (item; game.player.inventory.items) {
+    writefln("- %dx %s", item.quantity, item.tmpl.name);
+  }
   return CommandReturn.KeepTurn;
 }
 

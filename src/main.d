@@ -12,7 +12,7 @@ void main(string[] args) {
 
   if (name != "") {
     auto inventory = new Inventory(420, [
-      new Item(5, get_template("magic box"))
+      new Item(5, get_template("Magic Box")),
     ]);
     auto player = new Player(name, inventory);
     auto game = new Game(player);

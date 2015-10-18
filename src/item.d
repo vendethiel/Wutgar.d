@@ -1,3 +1,5 @@
+import algorithm : first;
+
 class ItemTemplate {
   string name;
 
@@ -7,14 +9,11 @@ class ItemTemplate {
 }
 
 ItemTemplate get_template(string name) {
-  static ItemTemplate[string] item_templates;
-  if (!item_templates) {
-    item_templates = [
-      "shroom": new ItemTemplate("Magic Shroom"),
-      "magic box": new ItemTemplate("Magic Shroom"),
-    ];
-  }
-  return item_templates[name];
+  static ItemTemplate[] item_templates = [
+    new ItemTemplate("Magic Shroom"),
+    new ItemTemplate("Magic Box"),
+  ];
+  return first!(i => i.name == name)(item_templates);
 }
 
 class Item {
