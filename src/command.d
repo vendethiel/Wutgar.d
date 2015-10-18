@@ -103,12 +103,13 @@ auto restrictMp(int mp) {
   };
 }
 
-auto requireObject(string name) {
+auto requireObject(string name, int quantity = 1) {
   return (command cmd) {
     return (Game game) {
       // XXX not sure it should be ".inventory" here...
-      if (!game.player.inventory.hasItem(name)) {
+      if (!game.player.inventory.hasItem(name, quantity)) {
         writefln("You're missing the item %s to do this", name);
+        return CommandReturn.KeepTurn;
       }
       game.player.inventory.useItem(name);
       return cmd(game);
@@ -134,7 +135,16 @@ CommandReturn attackFire(Game game) {
 }
 CommandReturn attackGamble(Game game) {
   return checkCreature((Game game) {
-    writeln("gambling TODO");
+    int damage = uniform(0, 20);
+    auto target = uniform(0, 1) ? game.fight.fighter : game.fight.opponent;
+    target.currentHp -= damage;
+    if (damage) {
+      writefln("You inflict %s %d damage(s)",
+        target == game.fight.fighter ? "yourself" : "your enemy",
+        damage);
+    } else {
+      writeln("You missed!");
+    }
     return CommandReturn.ConsumeTurn;
   })(game);
 }
