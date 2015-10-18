@@ -1,6 +1,6 @@
 import std.algorithm.mutation : remove;
-import std.stdio;
-import std.string;
+import std.stdio : writeln, write;
+import std.random : uniform;
 import read : readLine;
 import command;
 import fight;
@@ -54,11 +54,13 @@ class Game {
   void checkFightEnd() {
     if (fight !is null && fight.isOver) {
       if (fight.opponent.isDead) {
-        // TODO win uniform(90, 120) rupees
-        writeln("You win!");
+        auto gain = uniform(90, 120);
+        player.inventory.money += gain;
+        writefln("You win! You also find %d rupees on the %s's body",
+            gain, fight.opponent.name);
       } else if (fight.fighter !is null) {
         writeln("You lost, and your creature is in heaven... or hell");
-        game.player.removeDead();
+        player.removeDead();
       } else {
         writeln("You ran away from the fight!");
       }
