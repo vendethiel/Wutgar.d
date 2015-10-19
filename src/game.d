@@ -27,12 +27,20 @@ class Game {
     writeln("Welcome, " ~ player.name ~ ", to the world of Midwut...");
     while (true) {
       printTurnBanner();
-      if (auto command = handleCommand(this, readLine())) {
-        if (CommandReturn.ConsumeTurn == command(this) && inFight) {
-          playOpponentTurn();
+      if (inFight) {
+        if (auto command = handleFightCommand(this, readLine())) {
+          if (CommandReturn.ConsumeTurn == command(this)) {
+            playOpponentTurn();
+          }
+        } else {
+          writeln("No such fight command");
         }
       } else {
-        writeln("Unrecognized command");
+        if (auto command = handleWorldCommand(this, readLine())) {
+          command(this);
+        } else {
+          writeln("No such world command");
+        }
       }
     }
   }

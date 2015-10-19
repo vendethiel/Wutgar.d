@@ -15,47 +15,65 @@ enum CommandReturn {
   KeepTurn,
 }
 
-alias command = CommandReturn delegate(Game);
+alias worldCommand = void delegate(Game);
+alias fightCommand = CommandReturn delegate(Game);
 
-command handleCommand(Game game, string name) {
-  static command[string][FightState] actions;
+worldCommand handleWorldCommand(Game game, string name) {
+  static worldCommand[string] actions;
   if (!actions) {
     actions = [
-      FightState.OutOfFight: [
-        "team": toDelegate(&listTeam),
-        "you are the chosen one": toDelegate(&pickPokemon),
-        "let's fight": toDelegate(&startFight),
-        "shroom": toDelegate(&useShroom),
-        "shop": toDelegate(&shop),
-        "inventory": toDelegate(&inventory),
-        "quit": toDelegate(&quit),
-      ],
-      FightState.InFight: [
+      "team": toDelegate(&listTeam),
+      "you are the chosen one": toDelegate(&pickPokemon),
+      "let's fight": toDelegate(&startFight),
+      "shroom": toDelegate(&useShroom),
+      "shop": toDelegate(&shop),
+      "inventory": toDelegate(&inventory),
+      "quit": toDelegate(&quit),
+    ];
+  }
+  return actions.get(name, null);
+}
+/*
         "slash": toDelegate(&attackSlash),
         "fire": toDelegate(&attackFire),
         "gamble": toDelegate(&attackGamble),
         "rest": toDelegate(&attackRest),
+        */
 
-        "stat": toDelegate(&stat),
-        "magic catch": toDelegate(&magicCatch),
-        "quit": toDelegate(&flee),
-      ],
+fightCommand handleFightCommand(Game game, string name) {
+  static fightCommand[string] actions;
+  if (!actions) {
+    actions = [
+      "stat": toDelegate(&stat),
+      "magic catch": toDelegate(&magicCatch),
+      "quit": toDelegate(&flee),
     ];
   }
 
-  return actions[game.fightState].get(name, null);
+  if (auto creature = game.fight.fighter) {
+    if (creature.hasSpell(name)) {
+      return (Game game) { 
+        if (creature.getSpell(name)(game, creature, game.fight.opponent)) {
+          return CommandReturn.ConsumeTurn;
+        } else {
+          return CommandReturn.KeepTurn;
+        }
+      };
+    }
+  }
+
+  return actions.get(name, null);
 }
 
-CommandReturn listTeam(Game game) {
+void listTeam(Game game) {
   writeln("Your team:");
   foreach (creature; game.player.creatures) {
     writeln("- " ~ creature.stringDesc);
   }
-  return CommandReturn.KeepTurn;
 }
 
-CommandReturn pickPokemon(Game game) {
-  return checkCreature((Game game) {
+void pickPokemon(Game game) {
+  checkCreature((Game game) {
     writeln("Your team:");
     foreach (i, creature; game.player.creatures) {
       writefln("- #%d %s", i + 1, creature.stringDesc);
@@ -63,36 +81,37 @@ CommandReturn pickPokemon(Game game) {
 
     game.player.selectedId =
       readBetween("Creature number: ", 1, to!int(game.player.creatures.length));
-    return CommandReturn.KeepTurn;
+    return CommandReturn.KeepTurn; // :(
   })(game);
 }
 
-CommandReturn startFight(Game game) {
-  if (game.player.canStartFight) {
-    auto creature = creature.pick();
-    writeln("You're now fighting a " ~ creature.name);
-    game.fight = new Fight(game.player.selectedCreature, creature);
-  } else {
-    writeln("You can't fight until you picked a healthy pokemon to fight for you");
-  }
-  return CommandReturn.KeepTurn;
+void startFight(Game game) {
+  checkCreature((Game game) {
+    if (game.player.canStartFight) {
+      auto creature = creature.pick();
+      writeln("You're now fighting a " ~ creature.name);
+      game.fight = new Fight(game.player.selectedCreature, creature);
+    }
+    return CommandReturn.KeepTurn; // :(
+  });
 }
 
-CommandReturn quit(Game game) {
+auto quit(Game game) {
   throw new InterruptException();
 }
 
-command checkCreature(command cmd) {
+fightCommand checkCreature(fightCommand cmd) {
   return (Game game) {
     if (!game.player.hasCreature) {
       writeln("You don't have any creature!");
       return CommandReturn.KeepTurn;
     }
-    return cmd(game); };
+    return cmd(game);
+  };
 }
 
 auto restrictMp(int mp) {
-  return (command cmd) {
+  return (fightCommand cmd) {
     return (Game game) {
       if (game.fight.fighter.currentMp < mp) {
         writefln("You need at least %d", mp);
@@ -104,9 +123,8 @@ auto restrictMp(int mp) {
 }
 
 auto requireObject(string name, int quantity = 1) {
-  return (command cmd) {
+  return (fightCommand cmd) {
     return (Game game) {
-      // XXX not sure it should be ".inventory" here...
       if (!game.player.inventory.hasItem(name, quantity)) {
         writefln("You're missing the item %s to do this", name);
         return CommandReturn.KeepTurn;
@@ -117,7 +135,7 @@ auto requireObject(string name, int quantity = 1) {
   };
 }
 
-command useAttack(int dmg, int mp) {
+fightCommand useAttack(int dmg, int mp) {
 //return compose(checkCreature, restrictMp(mp))((Game game) {
   return restrictMp(mp)((Game game) {
     game.fight.fighter.currentMp -= mp;
@@ -127,12 +145,6 @@ command useAttack(int dmg, int mp) {
   });
 }
 
-CommandReturn attackSlash(Game game) {
-  return useAttack(15, 3)(game);
-}
-CommandReturn attackFire(Game game) {
-  return useAttack(30, 7)(game);
-}
 CommandReturn attackGamble(Game game) {
   return checkCreature((Game game) {
     int damage = uniform(0, 20);
@@ -183,8 +195,8 @@ CommandReturn magicCatch(Game game) {
   })(game);
 }
 
-CommandReturn useShroom(Game game) {
-  return checkCreature((Game game) {
+void useShroom(Game game) {
+  checkCreature((Game game) {
     if (game.player.selectedCreature is null) {
       writeln("You need to select your chosen one before healing him");
     } else if (game.player.selectedCreature.isFullHp) {
@@ -195,29 +207,27 @@ CommandReturn useShroom(Game game) {
       auto percentRegen = uniform(15, 25) / 100;
       creature.addHp(creature.maxHp * percentRegen);
     }
-    return CommandReturn.KeepTurn;
+    return CommandReturn.KeepTurn; // :(
   })(game);
 }
 
-CommandReturn shop(Game game) {
+void shop(Game game) {
   writeln("You're going shopping!");
   game.player.inventory.useItem("Magic Box");
-  return CommandReturn.KeepTurn;
 }
 
-CommandReturn inventory(Game game) {
+void inventory(Game game) {
   writefln("You have %d rupee(s)", game.player.inventory.money);
   writeln("Your inventory:");
   foreach (item; game.player.inventory.items) {
     writefln("- %dx %s", item.quantity, item.tmpl.name);
   }
-  return CommandReturn.KeepTurn;
 }
 
 CommandReturn stat(Game game) {
   return checkCreature((Game game) {
     writeln(game.fight.fighter.stringDesc);
-    return CommandReturn.KeepTurn;
+    return CommandReturn.KeepTurn; // :(
   })(game);
 }
 

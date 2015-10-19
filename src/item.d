@@ -8,11 +8,12 @@ class ItemTemplate {
   }
 }
 
+static ItemTemplate[] item_templates = [
+  new ItemTemplate("Magic Shroom"),
+  new ItemTemplate("Magic Box"),
+];
+
 ItemTemplate get_template(string name) {
-  static ItemTemplate[] item_templates = [
-    new ItemTemplate("Magic Shroom"),
-    new ItemTemplate("Magic Box"),
-  ];
   return first!(i => i.name == name)(item_templates);
 }
 
