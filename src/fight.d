@@ -1,4 +1,7 @@
-import std.stdio : writeln;
+import std.stdio : writeln, writefln;
+import std.algorithm.iteration : filter;
+import std.array : array;
+import std.random : uniform;
 import creature;
 
 enum FightState {
@@ -15,9 +18,14 @@ class Fight {
   }
 
   void opponentTurn() {
-    writeln("Your opponent is playing");
-    // TODO attack
-    // TODO magic catch
+    auto launchableSpells =
+      filter!(s => s.canCast(opponent, fighter, false))(opponent.spells)
+      .array(); // eager
+    if (launchableSpells.length) {
+      launchableSpells[uniform(0, $)](opponent, fighter);
+    } else {
+      writefln("%s looks around, confused, as he figures he doesn't have a spell he can cast anymore", opponent.name);
+    }
   }
 
   @property bool isOver() {

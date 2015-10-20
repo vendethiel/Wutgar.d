@@ -159,8 +159,9 @@ void useShroom(Game game) {
       writeln("Your chosen one is already max hp");
     } else {
       auto creature = game.player.selectedCreature;
-      auto percentRegen = uniform(15, 25) / 100;
-      auto heal = creature.maxHp * percentRegen;
+      // best algo world. l o l.
+      auto percentRegen = 1 + (uniform(15, 26) / 100f);
+      auto heal = to!int(creature.maxHp * percentRegen - creature.maxHp);
       writefln("Healed %s for %d hp", creature.name, heal);
       creature.addHp(heal);
     }

@@ -81,11 +81,11 @@ class Creature {
   }
 
   @property bool isFullHp() {
-    return currentHp == baseStats.hp;
+    return currentHp == maxHp;
   }
 
   @property bool isFullMp() {
-    return currentMp == baseStats.mp;
+    return currentMp == maxMp;
   }
 
   @property bool isDead() {
@@ -105,7 +105,7 @@ auto creatures = [
   new immutable CreatureStats("Gros Lapin", 20, 10, [
     getSpell("slash"),
     getSpell("rest"),
-    getSpell("heal"),
+    getSpell("gamble"),
   ]),
   new immutable CreatureStats("Enorme Lapin", 40, 20, [
     getSpell("slash"),
