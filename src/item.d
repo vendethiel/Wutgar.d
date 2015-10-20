@@ -9,7 +9,7 @@ class ItemTemplate {
 }
 
 static ItemTemplate[] item_templates = [
-  new ItemTemplate("Magic Shroom"),
+  new ItemTemplate("Shroom"),
   new ItemTemplate("Magic Box"),
 ];
 

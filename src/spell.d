@@ -1,3 +1,4 @@
+import std.stdio : writefln;
 import algorithm : first;
 import game;
 import creature;
@@ -23,6 +24,18 @@ class OffensiveSpell : Spell {
   }
 
   override bool opCall(Game game, Creature self, Creature opponent) immutable {
+    if (self.currentMp < cost) {
+      // TODO flag "isPlayer" to avoid outputting an error message?
+      //      or add a "canCast" method?
+      //      or throw a Exception.NotEnoughMana?
+      writefln("Not enough mana: need %d, got %d",
+          cost, self.currentMp);
+      return false;
+    }
+    self.currentMp -= cost;
+    opponent.currentHp -= power;
+    writefln("%s inflicted %d damage(s) to %s",
+        self.name, power, opponent.name);
     return true;
   }
 }

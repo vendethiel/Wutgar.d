@@ -5,6 +5,7 @@ import std.algorithm : map;
 import std.functional : toDelegate, compose;
 import exception : InterruptException;
 import read : readLine, readBetween;
+import shop;
 import game;
 import player;
 import fight;
@@ -26,7 +27,7 @@ worldCommand handleWorldCommand(Game game, string name) {
       "you are the chosen one": toDelegate(&pickPokemon),
       "let's fight": toDelegate(&startFight),
       "shroom": toDelegate(&useShroom),
-      "shop": toDelegate(&shop),
+      "shop": toDelegate(&goShopping),
       "inventory": toDelegate(&inventory),
       "quit": toDelegate(&quit),
     ];
@@ -86,14 +87,11 @@ void pickPokemon(Game game) {
 }
 
 void startFight(Game game) {
-  checkCreature((Game game) {
-    if (game.player.canStartFight) {
-      auto creature = creature.pick();
-      writeln("You're now fighting a " ~ creature.name);
-      game.fight = new Fight(game.player.selectedCreature, creature);
-    }
-    return CommandReturn.KeepTurn; // :(
-  });
+  if (game.player.canStartFight) {
+    auto creature = creature.pick();
+    writeln("You're now fighting a " ~ creature.name);
+    game.fight = new Fight(game.player.selectedCreature, creature);
+  }
 }
 
 auto quit(Game game) {
@@ -110,18 +108,6 @@ fightCommand checkCreature(fightCommand cmd) {
   };
 }
 
-auto restrictMp(int mp) {
-  return (fightCommand cmd) {
-    return (Game game) {
-      if (game.fight.fighter.currentMp < mp) {
-        writefln("You need at least %d", mp);
-        return CommandReturn.KeepTurn;
-      }
-      return cmd(game);
-    };
-  };
-}
-
 auto requireObject(string name, int quantity = 1) {
   return (fightCommand cmd) {
     return (Game game) {
@@ -133,16 +119,6 @@ auto requireObject(string name, int quantity = 1) {
       return cmd(game);
     };
   };
-}
-
-fightCommand useAttack(int dmg, int mp) {
-//return compose(checkCreature, restrictMp(mp))((Game game) {
-  return restrictMp(mp)((Game game) {
-    game.fight.fighter.currentMp -= mp;
-    game.fight.opponent.currentHp -= dmg;
-    writefln("You inflict %d damage(s)", dmg);
-    return CommandReturn.ConsumeTurn;
-  });
 }
 
 CommandReturn attackGamble(Game game) {
@@ -211,9 +187,27 @@ void useShroom(Game game) {
   })(game);
 }
 
-void shop(Game game) {
-  writeln("You're going shopping!");
-  game.player.inventory.useItem("Magic Box");
+void goShopping(Game game) {
+  auto shop = main_shop();
+  writefln("Welcome to %s. Items for sale: (0 to leave)", shop.name);
+  foreach (i, item; shop.items) {
+    writefln("- #%d: %s (costs %d)", i + 1, item.tmpl.name, item.cost);
+  }
+  int sel;
+  do {
+    sel = readBetween("Your choice", 0, to!int(shop.items.length));
+    if (sel) {
+      auto item = shop.items[sel - 1];
+      if (game.player.inventory.money >= item.cost) {
+        game.player.inventory.addItem(item.tmpl.name, 1);
+        game.player.inventory.money -= item.cost;
+        writefln("You bought %s for %d. Money left: %d",
+            item.tmpl.name, item.cost, game.player.inventory.money);
+      } else {
+        writefln("You're too poor to buy %s", item.tmpl.name);
+      }
+    }
+  } while (sel && game.player.inventory.money);
 }
 
 void inventory(Game game) {
