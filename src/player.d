@@ -36,7 +36,7 @@ class Inventory {
     if (hasItem(name)) {
       getItem(name).quantity += quantity;
     } else {
-      items ~= new Item(quantity, get_template(name));
+      items ~= new Item(quantity, getItemTemplate(name));
     }
   }
 
@@ -58,7 +58,7 @@ class Player {
   }
 
   bool doesCapture(Creature opponent) {
-    if (opponent is null) {
+    if (selectedCreature is null) {
       // we don't have a creature
       return uniform(1, 3) == 1;
     } else if (opponent.currentHp < 5) {

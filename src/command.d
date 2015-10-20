@@ -34,12 +34,6 @@ worldCommand handleWorldCommand(Game game, string name) {
   }
   return actions.get(name, null);
 }
-/*
-        "slash": toDelegate(&attackSlash),
-        "fire": toDelegate(&attackFire),
-        "gamble": toDelegate(&attackGamble),
-        "rest": toDelegate(&attackRest),
-        */
 
 fightCommand handleFightCommand(Game game, string name) {
   static fightCommand[string] actions;
@@ -54,10 +48,12 @@ fightCommand handleFightCommand(Game game, string name) {
   if (auto creature = game.fight.fighter) {
     if (creature.hasSpell(name)) {
       return (Game game) { 
-        if (creature.getSpell(name)(game, creature, game.fight.opponent)) {
-          return CommandReturn.ConsumeTurn;
-        } else {
+        auto spell = creature.getSpell(name);
+        if (!spell.canCast(creature, game.fight.opponent, true)) {
           return CommandReturn.KeepTurn;
+        } else {
+          spell(creature, game.fight.opponent);
+          return CommandReturn.ConsumeTurn;
         }
       };
     }
@@ -91,6 +87,8 @@ void startFight(Game game) {
     auto creature = creature.pick();
     writeln("You're now fighting a " ~ creature.name);
     game.fight = new Fight(game.player.selectedCreature, creature);
+  } else {
+    writeln("Can't start a fight without a (healthy) creature");
   }
 }
 
@@ -119,22 +117,6 @@ auto requireObject(string name, int quantity = 1) {
       return cmd(game);
     };
   };
-}
-
-CommandReturn attackGamble(Game game) {
-  return checkCreature((Game game) {
-    int damage = uniform(0, 20);
-    auto target = uniform(0, 1) ? game.fight.fighter : game.fight.opponent;
-    target.currentHp -= damage;
-    if (damage) {
-      writefln("You inflict %s %d damage(s)",
-        target == game.fight.fighter ? "yourself" : "your enemy",
-        damage);
-    } else {
-      writeln("You missed!");
-    }
-    return CommandReturn.ConsumeTurn;
-  })(game);
 }
 
 CommandReturn attackRest(Game game) {
@@ -172,19 +154,18 @@ CommandReturn magicCatch(Game game) {
 }
 
 void useShroom(Game game) {
-  checkCreature((Game game) {
-    if (game.player.selectedCreature is null) {
-      writeln("You need to select your chosen one before healing him");
-    } else if (game.player.selectedCreature.isFullHp) {
+  checkCreature(requireObject("Shroom")((Game game) {
+    if (game.player.selectedCreature.isFullHp) {
       writeln("Your chosen one is already max hp");
     } else {
-      // TODO check inventory + remove one shroom
       auto creature = game.player.selectedCreature;
       auto percentRegen = uniform(15, 25) / 100;
-      creature.addHp(creature.maxHp * percentRegen);
+      auto heal = creature.maxHp * percentRegen;
+      writefln("Healed %s for %d hp", creature.name, heal);
+      creature.addHp(heal);
     }
     return CommandReturn.KeepTurn; // :(
-  })(game);
+  }))(game);
 }
 
 void goShopping(Game game) {

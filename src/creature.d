@@ -45,6 +45,11 @@ class Creature {
     currentHp = min(currentHp, baseStats.hp);
   }
 
+  void addMp(int mp) {
+    currentMp += mp;
+    currentMp = min(currentMp, baseStats.mp);
+  }
+
   bool hasSpell(string name) {
     return any!(s => s.name == name)(spells);
   }
@@ -94,11 +99,20 @@ class Creature {
 
 auto creatures = [
   new immutable CreatureStats("Petit Lapin", 5, 10, [
-      
+    getSpell("slash"),
+    getSpell("rest"),
   ]),
   new immutable CreatureStats("Gros Lapin", 20, 10, [
+    getSpell("slash"),
+    getSpell("rest"),
+    getSpell("heal"),
   ]),
   new immutable CreatureStats("Enorme Lapin", 40, 20, [
+    getSpell("slash"),
+    getSpell("fire"),
+    getSpell("rest"),
+    getSpell("heal"),
+    getSpell("gamble"),
   ]),
 ];
 

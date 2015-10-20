@@ -13,7 +13,7 @@ static ItemTemplate[] item_templates = [
   new ItemTemplate("Magic Box"),
 ];
 
-ItemTemplate get_template(string name) {
+ItemTemplate getItemTemplate(string name) {
   return first!(i => i.name == name)(item_templates);
 }
 

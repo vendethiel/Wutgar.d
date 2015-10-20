@@ -3,7 +3,7 @@ import std.getopt;
 import exception : InterruptException;
 import game;
 import player;
-import item : Item, get_template;
+import item;
 
 void main(string[] args) {
   string name = "";
@@ -12,7 +12,7 @@ void main(string[] args) {
 
   if (name != "") {
     auto inventory = new Inventory(420, [
-      new Item(5, get_template("Magic Box")),
+      new Item(5, getItemTemplate("Magic Box")),
     ]);
     auto player = new Player(name, inventory);
     auto game = new Game(player);
