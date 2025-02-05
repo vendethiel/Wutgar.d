@@ -23,9 +23,9 @@ Shop main_shop() {
   //       because dmd forbids assoc.arrays. in static :[
   if (!shop) {
     shop = new Shop("Main Shop", [
-      ShopItem(getItemTemplate("Shroom"), 30),
-      ShopItem(getItemTemplate("Magic Box"), 90),
-    ]);
+        ShopItem(getItemTemplate("Shroom"), 30),
+        ShopItem(getItemTemplate("Magic Box"), 90),
+      ]);
   }
   return shop;
 }

@@ -5,9 +5,6 @@
   "targetType": "executable",
   "sourcePaths": ["src"],
   "importPaths": ["src"],
-  "libs": [
-  ],
- 
-  "dependencies": {
-  }
+  "libs": [],
+  "dependencies": {}
 }

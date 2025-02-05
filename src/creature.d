@@ -65,7 +65,7 @@ class Creature {
 
   @property string stringDesc() {
     return format("%s (HP: %d/%d. MP: %d/%d)",
-        name, currentHp, baseStats.hp, currentMp, baseStats.mp);
+      name, currentHp, baseStats.hp, currentMp, baseStats.mp);
   }
 
   @property int hpPercent() {
@@ -99,21 +99,21 @@ class Creature {
 
 auto creatures = [
   new immutable CreatureStats("Petit Lapin", 5, 10, [
-    getSpell("slash"),
-    getSpell("rest"),
-  ]),
+      getSpell("slash"),
+      getSpell("rest"),
+    ]),
   new immutable CreatureStats("Gros Lapin", 20, 10, [
-    getSpell("slash"),
-    getSpell("rest"),
-    getSpell("gamble"),
-  ]),
-  new immutable CreatureStats("Enorme Lapin", 40, 20, [
-    getSpell("slash"),
-    getSpell("fire"),
-    getSpell("rest"),
-    getSpell("heal"),
-    getSpell("gamble"),
-  ]),
+      getSpell("slash"),
+      getSpell("rest"),
+      getSpell("gamble"),
+    ]),
+  new immutable CreatureStats("Énorme Lapin", 40, 20, [
+      getSpell("slash"),
+      getSpell("fire"),
+      getSpell("rest"),
+      getSpell("heal"),
+      getSpell("gamble"),
+    ]),
 ];
 
 Creature pick() {

@@ -5,8 +5,9 @@ import std.random : uniform;
 import creature;
 
 enum FightState {
-  InFight, OutOfFight
-};
+  InFight,
+  OutOfFight
+}
 
 class Fight {
   Creature fighter; /* TODO std.typecons.Nullable */
@@ -24,7 +25,8 @@ class Fight {
     if (launchableSpells.length) {
       launchableSpells[uniform(0, $)](opponent, fighter);
     } else {
-      writefln("%s looks around, confused, as he figures he doesn't have a spell he can cast anymore", opponent.name);
+      writefln("%s looks around, confused, as he figures he doesn't have a spell he can cast anymore", opponent
+          .name);
     }
   }
 

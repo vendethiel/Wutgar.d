@@ -1,5 +1,5 @@
 import std.algorithm.mutation : remove;
-import std.stdio : writeln, write;
+import std.stdio : writefln, writeln, write;
 import std.random : uniform;
 import read : readLine;
 import command;
@@ -20,7 +20,7 @@ class Game {
   }
 
   @property bool inFight() {
-    return fightState() == FightState.InFight;
+    return fight !is null;
   }
 
   void start() {
@@ -65,7 +65,7 @@ class Game {
         auto gain = uniform(90, 120);
         player.inventory.money += gain;
         writefln("You win! You also find %d rupees on the %s's body",
-            gain, fight.opponent.name);
+          gain, fight.opponent.name);
       } else if (fight.fighter !is null) {
         writeln("You lost, and your creature is in heaven... or hell");
         player.removeDead();

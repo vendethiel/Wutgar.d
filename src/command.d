@@ -19,7 +19,7 @@ enum CommandReturn {
 alias worldCommand = void delegate(Game);
 alias fightCommand = CommandReturn delegate(Game);
 
-worldCommand handleWorldCommand(Game game, string name) {
+const(worldCommand[string]) worldCommands() {
   static worldCommand[string] actions;
   if (!actions) {
     actions = [
@@ -32,10 +32,14 @@ worldCommand handleWorldCommand(Game game, string name) {
       "quit": toDelegate(&quit),
     ];
   }
-  return actions.get(name, null);
+  return actions;
 }
 
-fightCommand handleFightCommand(Game game, string name) {
+worldCommand handleWorldCommand(Game, string name) {
+  return worldCommands.get(name, null);
+}
+
+const(fightCommand[string]) fightCommands() {
   static fightCommand[string] actions;
   if (!actions) {
     actions = [
@@ -44,10 +48,13 @@ fightCommand handleFightCommand(Game game, string name) {
       "quit": toDelegate(&flee),
     ];
   }
+  return actions;
+}
 
+fightCommand handleFightCommand(Game game, string name) {
   if (auto creature = game.fight.fighter) {
     if (creature.hasSpell(name)) {
-      return (Game game) { 
+      return (Game game) {
         auto spell = creature.getSpell(name);
         if (!spell.canCast(creature, game.fight.opponent, true)) {
           return CommandReturn.KeepTurn;
@@ -59,7 +66,7 @@ fightCommand handleFightCommand(Game game, string name) {
     }
   }
 
-  return actions.get(name, null);
+  return fightCommands.get(name, null);
 }
 
 void listTeam(Game game) {
@@ -92,7 +99,7 @@ void startFight(Game game) {
   }
 }
 
-auto quit(Game game) {
+void quit(Game) {
   throw new InterruptException();
 }
 
@@ -155,18 +162,18 @@ CommandReturn magicCatch(Game game) {
 
 void useShroom(Game game) {
   checkCreature(requireObject("Shroom")((Game game) {
-    if (game.player.selectedCreature.isFullHp) {
-      writeln("Your chosen one is already max hp");
-    } else {
-      auto creature = game.player.selectedCreature;
-      // best algo world. l o l.
-      auto percentRegen = 1 + (uniform(15, 26) / 100f);
-      auto heal = to!int(creature.maxHp * percentRegen - creature.maxHp);
-      writefln("Healed %s for %d hp", creature.name, heal);
-      creature.addHp(heal);
-    }
-    return CommandReturn.KeepTurn; // :(
-  }))(game);
+      if (game.player.selectedCreature.isFullHp) {
+        writeln("Your chosen one is already max hp");
+      } else {
+        auto creature = game.player.selectedCreature;
+        // best algo world. l o l.
+        auto percentRegen = 1 + (uniform(15, 26) / 100f);
+        auto heal = to!int(creature.maxHp * percentRegen - creature.maxHp);
+        writefln("Healed %s for %d hp", creature.name, heal);
+        creature.addHp(heal);
+      }
+      return CommandReturn.KeepTurn; // :(
+    }))(game);
 }
 
 void goShopping(Game game) {
@@ -184,12 +191,13 @@ void goShopping(Game game) {
         game.player.inventory.addItem(item.tmpl.name, 1);
         game.player.inventory.money -= item.cost;
         writefln("You bought %s for %d. Money left: %d",
-            item.tmpl.name, item.cost, game.player.inventory.money);
+          item.tmpl.name, item.cost, game.player.inventory.money);
       } else {
         writefln("You're too poor to buy %s", item.tmpl.name);
       }
     }
-  } while (sel && game.player.inventory.money);
+  }
+  while (sel && game.player.inventory.money);
 }
 
 void inventory(Game game) {
@@ -205,10 +213,6 @@ CommandReturn stat(Game game) {
     writeln(game.fight.fighter.stringDesc);
     return CommandReturn.KeepTurn; // :(
   })(game);
-}
-
-CommandReturn quit(Game game) {
-  throw new InterruptException();
 }
 
 CommandReturn flee(Game game) {

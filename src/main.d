@@ -7,13 +7,13 @@ import item;
 
 void main(string[] args) {
   string name = "";
-  auto options = getopt(args,
-      "n", &name);
+  getopt(args, "n", &name);
 
   if (name != "") {
-    auto inventory = new Inventory(420, [
-      new Item(5, getItemTemplate("Magic Box")),
-    ]);
+    auto inventory = new Inventory(420,
+      [
+        new Item(5, getItemTemplate("Magic Box")),
+      ]);
     auto player = new Player(name, inventory);
     auto game = new Game(player);
     try {
@@ -26,5 +26,5 @@ void main(string[] args) {
 }
 
 void printUsage() {
-  writeln("Usage: ./bfw -n <NAME>");
+  writeln("Usage: ./battle-for-wudgar -n <NAME>");
 }

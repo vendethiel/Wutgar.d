@@ -41,6 +41,7 @@ body {
   int n;
   do {
     n = readInt(message);
-  } while (n < low || n > high);
+  }
+  while (n < low || n > high);
   return n;
 }

@@ -8,7 +8,7 @@ import item;
 class Inventory {
   int money;
   Item[] items;
-  
+
   @disable this();
 
   this(int money, Item[] items) {
@@ -24,7 +24,7 @@ class Inventory {
     if (!hasItem(name, quantity)) {
       return false;
     }
-    auto item = getItem(name); 
+    auto item = getItem(name);
     item.quantity -= quantity;
     if (!item.quantity) {
       items = remove!(i => i == item)(items);

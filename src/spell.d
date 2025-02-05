@@ -11,7 +11,7 @@ class Spell {
     this.name = name;
   }
 
-  bool canCast(Creature, Creature, bool log) immutable {
+  bool canCast(Creature, Creature, bool) immutable {
     return true;
   }
 
@@ -32,7 +32,7 @@ class OffensiveSpell : Spell {
     if (self.currentMp < cost) {
       if (log) {
         writefln("%s costs %d mana, %s only has %d",
-            name, cost, self.name, self.currentMp);
+          name, cost, self.name, self.currentMp);
       }
       return false;
     }
@@ -43,7 +43,7 @@ class OffensiveSpell : Spell {
     self.currentMp -= cost;
     opponent.currentHp -= power;
     writefln("%s inflicted %d damage(s) to %s",
-        self.name, power, opponent.name);
+      self.name, power, opponent.name);
   }
 }
 
@@ -61,7 +61,7 @@ class HealingSpell : Spell {
     if (self.currentMp < cost) {
       if (log) {
         writefln("%s costs %d mana, %s only has %d",
-            name, cost, self.name, self.currentMp);
+          name, cost, self.name, self.currentMp);
       }
       return false;
     }
@@ -78,7 +78,7 @@ class HealingSpell : Spell {
     self.currentMp -= cost;
     self.addHp(power);
     writefln("%s gains %d health back",
-        self.name, power);
+      self.name, power);
   }
 }
 
@@ -103,7 +103,7 @@ class ManaSpell : Spell {
   override void opCall(Creature self, Creature opponent) immutable {
     self.addMp(power);
     writefln("%s gains %d mana back",
-        self.name, power, self.currentMp);
+      self.name, power, self.currentMp);
   }
 }
 
@@ -119,7 +119,7 @@ class GambleSpell : OffensiveSpell {
     if (damage) {
       target.currentHp -= damage;
       writefln("%s gambles and inflicts %d damage(s) to %s",
-          self.name, damage, self == target ? "himself" : target.name);
+        self.name, damage, self == target ? "himself" : target.name);
     } else {
       writefln("%s missed!", self.name);
     }
